@@ -1,3 +1,7 @@
 <resources>
-    <string name="app_name">MyApiTest - COLOQUE O SEU NOME AQUI</string>
+    <string name="app_name">API - Edmar Fernandes Jr</string>
+    <string name="logout">LogOut</string>
+    <string name="error_validate_form">FORMULARIO INCORRETO NO CAMPO: %1$s</string>
+    <string name="success_create">SUCESSO: %1$s criado</string>
+    <string name="error_create">ERRO AO CRIAR NOVO ITEM</string>
 </resources>

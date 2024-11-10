@@ -1,10 +1,26 @@
 package com.example.myapitest
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.myapitest.adapter.CarAdapter
 import com.example.myapitest.databinding.ActivityMainBinding
+import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import com.example.myapitest.model.Car
+import com.example.myapitest.service.Result
+import com.example.myapitest.service.retrofitClient
+import com.example.myapitest.service.safeApiCall
+import com.squareup.picasso.Picasso
 
-class MainActivity : AppCompatActivity() {
+class   MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
 
@@ -35,8 +51,31 @@ class MainActivity : AppCompatActivity() {
         fetchItems()
     }
 
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean{
+        menuInflater.inflate(R.menu.menu_main,menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId){
+            R.id.menu_logout -> {
+                FirebaseAuth.getInstance().signOut()
+                val intent = LoginActivity.newIntent(this)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                startActivity(intent)
+                finish()
+
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
     private fun setupView() {
-        // TODO
+        binding.recyclerView.layoutManager = LinearLayoutManager(this)
+        binding.addCta.setOnClickListener {
+            startActivity(NewCarActivity.newIntent(this))
+        }
     }
 
     private fun requestLocationPermission() {
@@ -44,6 +83,27 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun fetchItems() {
-        // TODO
+        CoroutineScope(Dispatchers.IO).launch {
+            var result = safeApiCall { retrofitClient.apiService.getItens() }
+
+            withContext(Dispatchers.Main){
+                when (result) {
+
+                    is Result.Error -> TODO()
+                    is Result.Success -> handleOnSuccess(result.data)
+                }
+            }
+        }
+    }
+
+    private fun handleOnSuccess(data: List<Car>) {
+        val adapter = CarAdapter(data)
+        binding.recyclerView.adapter = adapter
+
+    }
+
+    companion object{
+        fun newIntent(context: Context)= Intent(context, MainActivity::class.java)
     }
 }
+
